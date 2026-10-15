@@ -16,5 +16,8 @@ CREATE TABLE videojuegos (
     PRIMARY KEY (codigo)
 );
 
+INSERT INTO videojuegos (codigo, nombre, plataforma, precio, disponible, genero) VALUES
+('01', 'FIFA', 'PC', 89.99, true, 'deportes')
+
 SELECT * FROM videojuegos;
 
