@@ -6,7 +6,7 @@ public class Videojuego {
 	private String codigo;
 	private String nombre;
 	private String plataforma;
-	private String precio;
+	private double precio;
 	private boolean disponible;
 	private String genero;
 	
@@ -29,10 +29,10 @@ public class Videojuego {
 	public void setPlataforma(String plataforma) {
 		this.plataforma = plataforma;
 	}
-	public String getPrecio() {
+	public double getPrecio() {
 		return precio;
 	}
-	public void setPrecio(String precio) {
+	public void setPrecio(double precio) {
 		this.precio = precio;
 	}
 	public boolean isDisponible() {
@@ -54,7 +54,7 @@ public class Videojuego {
 		super();
 	}
 	//con parametros
-	public Videojuego(String codigo, String nombre, String plataforma, String precio, boolean disponible,
+	public Videojuego(String codigo, String nombre, String plataforma, double precio, boolean disponible,
 			String genero) {
 		super();
 		this.codigo = codigo;
@@ -68,12 +68,12 @@ public class Videojuego {
 	//parte 5 metodo toString
 	@Override
 	public String toString() {
-		return "Videojuego [codigo=" + codigo + 
-				", nombre=" + nombre + 
-				", plataforma=" + plataforma + 
-				", precio=" + precio + 
-				", disponible=" + disponible + 
-				", genero=" + genero + 
+		return " [codigo = " + codigo + 
+				", nombre = " + nombre + 
+				", plataforma = " + plataforma + 
+				", precio = " + precio + 
+				", disponible = " + disponible + 
+				", genero = " + genero + 
 				"]";
 	}
 }
