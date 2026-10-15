@@ -14,7 +14,6 @@ import com.krakedev.jdbc.Conexion;
 import com.krakedev.videojuegos.entidades.Videojuego;
 
 public class VideojuegoJdbc {
-	// parte 7 crea clase JDBC
 	private static final Logger Log = LogManager.getLogger(VideojuegoJdbc.class);
 
 	// insertar
@@ -23,8 +22,7 @@ public class VideojuegoJdbc {
 		PreparedStatement ps = null;
 		try {
 			con = Conexion.getConnection();
-			String sql;
-			sql = """
+			String sql = """
 					INSERT INTO videojuegos (codigo, nombre, plataforma, precio, disponible, genero) VALUES (?, ?, ?, ?, ?, ?)
 					""";
 			ps = con.prepareStatement(sql);
@@ -37,15 +35,11 @@ public class VideojuegoJdbc {
 			ps.executeUpdate();
 			Log.info("Videojuego insertado: " + videojuego.getCodigo());
 			return videojuego;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Log.error("Error al insertar videojuego: " + e.getMessage());
 			return null;
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			cerrar(con, ps, null);
 		}
 	}
 
@@ -57,27 +51,26 @@ public class VideojuegoJdbc {
 		ResultSet rs = null;
 		try {
 			con = Conexion.getConnection();
-			String sql;
-			sql = """
+			String sql = """
 					SELECT * FROM videojuegos
 					""";
 			ps = con.prepareStatement(sql);
 			rs = ps.executeQuery();
 			while (rs.next()) {
-				Videojuego v = new Videojuego(rs.getString("codigo"), rs.getString("nombre"),
-						rs.getString("plataforma"), rs.getDouble("precio"), rs.getBoolean("disponible"),
+				Videojuego v = new Videojuego(
+						rs.getString("codigo"), 
+						rs.getString("nombre"),
+						rs.getString("plataforma"), 
+						rs.getDouble("precio"), 
+						rs.getBoolean("disponible"),
 						rs.getString("genero"));
 				lista.add(v);
 			}
 			Log.info("Videojuegos listados: " + lista.size());
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Log.error("Error al listar videojuegos: " + e.getMessage());
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			cerrar(con, ps, rs);
 		}
 		return lista;
 	}
@@ -90,8 +83,7 @@ public class VideojuegoJdbc {
 		ResultSet rs = null;
 		try {
 			con = Conexion.getConnection();
-			String sql;
-			sql = """
+			String sql = """
 					SELECT codigo, nombre, plataforma, precio, disponible, genero FROM videojuegos WHERE codigo = ?
 					""";
 			ps = con.prepareStatement(sql);
@@ -104,14 +96,10 @@ public class VideojuegoJdbc {
 			} else {
 				Log.warn("No existe el videojuego: " + codigo);
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Log.error("Error al buscar videojuego: " + e.getMessage());
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			cerrar(con, ps, rs);
 		}
 		return v;
 	}
@@ -122,8 +110,7 @@ public class VideojuegoJdbc {
 		PreparedStatement ps = null;
 		try {
 			con = Conexion.getConnection();
-			String sql;
-			sql = """
+			String sql = """
 					UPDATE videojuegos SET nombre = ?, plataforma = ?, precio = ?, disponible = ?, genero = ? WHERE codigo = ?
 					""";
 			ps = con.prepareStatement(sql);
@@ -141,15 +128,11 @@ public class VideojuegoJdbc {
 			}
 			Log.warn("No se actualizó, no existe el código: " + codigo);
 			return null;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Log.error("Error al actualizar videojuego: " + e.getMessage());
 			return null;
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			cerrar(con, ps, null);
 		}
 	}
 
@@ -168,42 +151,32 @@ public class VideojuegoJdbc {
 			}
 			Log.warn("No se eliminó, no existe el código: " + codigo);
 			return false;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			Log.error("Error al eliminar videojuego: " + e.getMessage());
 			return false;
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+			cerrar(con, ps, null);
+		}
+	}
+
+	// cerrar conexiones
+	private void cerrar(
+			Connection con, 
+			PreparedStatement ps, 
+			ResultSet rs) {
+		try {
+			if (rs != null) {
+				rs.close();
 			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (con != null) {
+				con.close();
+				Log.info("Conexión cerrada");
+			}
+		} catch (SQLException e) {
+			Log.error("Error al cerrar : " + e.getMessage());
 		}
 	}
-	
-	//prueba
-	public static void main(String[] args) {
-		VideojuegoJdbc jdbc = new VideojuegoJdbc();
-		
-		Videojuego nuevo = new Videojuego("VJ99", "Hollow Knight", "PC", 14.99, true, "Metroidvania");
-		System.out.println("INSERTAR: " + jdbc.insertar(nuevo));
-
-		// 2. Listar
-		System.out.println("LISTAR:");
-		for (Videojuego v : jdbc.listar()) {
-			System.out.println("  " + v);
-		}
-
-		// 3. Buscar
-		System.out.println("BUSCAR: " + jdbc.buscar("VJ99"));
-
-		// 4. Actualizar
-		Videojuego cambios = new Videojuego("VJ99", "HOLLOW", "SWITCH2", 19.99, false, "AVENTURA");
-		System.out.println("ACTUALIZAR: " + jdbc.actualizar("VJ99", cambios));
-		System.out.println("BUSCAR (después de actualizar): " + jdbc.buscar("VJ99"));
-
-		// 5. Eliminar
-		System.out.println("ELIMINAR: " + jdbc.eliminar("VJ99"));
-		System.out.println("BUSCAR (después de eliminar): " + jdbc.buscar("VJ99"));
-	}
-
 }
